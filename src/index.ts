@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import { Server as SocketServer } from "socket.io";
+import { RecvEvents, SendEvents } from "./types/socket-events";
 
 const app = express();
 
@@ -14,12 +15,14 @@ const PORT = 5001;
 io.on("connection", (socket) => {
   console.log("socket connect: ", socket.id);
 
-  socket.broadcast.emit("join", `${socket.id} joined the queue!`);
+  socket.on(RecvEvents.JoinQueue, (playerName) => {
+    io.emit(SendEvents.SomeoneJoined, `${playerName} joined!`);
+  });
 
   socket.on("disconnect", async () => {
     console.log("socket disconnect: ", socket.id);
 
-    socket.broadcast.emit("leave", `${socket.id} left the queue!`);
+    socket.broadcast.emit(SendEvents.SomeoneLeft, `Someone left!`);
   });
 });
 
